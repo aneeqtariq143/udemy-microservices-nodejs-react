@@ -1,0 +1,17 @@
+apiVersion: skaffold/v4beta11
+kind: Config
+metadata:
+  name: udemy-microservices-nodejs-react
+build:
+  artifacts:
+    - image: aneeqtariq143/udemy-microservices-nodejs-react-auth-service
+      context: auth
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: 'src/**/*.ts'
+            dest: .
+manifests:
+  rawYaml:
+    - infra/k8s/*

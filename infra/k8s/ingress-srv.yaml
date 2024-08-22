@@ -1,0 +1,33 @@
+# Ingress resource for the service
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+# Metadata for the Ingress
+metadata:
+  # Name is the name of the resource
+  name: ingress-srv
+  # Annotations is the data about the resource
+  annotations:
+    # nginx.ingress.kubernetes.io/use-regex is the regex of the ingress
+    nginx.ingress.kubernetes.io/use-regex: "true"
+# Spec is the configuration of the resource
+spec:
+  ingressClassName: nginx
+  # Rules is the list of rules
+  rules:
+    # - host is the host of the rule
+    - host: dev.ticketing.dev
+      # Http is the configuration of the http
+      http:
+        # Paths is the list of paths
+        paths:
+          # - path is the path of the rule
+          - path: /api/users/?(.*)
+            # PathType is the type of the path
+            # Use "Prefix" for exact match and "ImplementationSpecific" for regex
+            pathType: Prefix
+            # Backend is the configuration of the backend
+            backend:
+              service:
+                name: auth-srv
+                port:
+                  number: 3000
