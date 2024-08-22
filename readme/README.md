@@ -136,7 +136,7 @@ Each service has its own folder, common libraries shared between all the resourc
    7. Add `ingress-nginx-controller` to `/etc/hosts` file. In our case it's we add `minikube ip` to `/etc/hosts` file `192.168.49.2 dev.ticketing.dev`.
       - Note: In linux we use `minikube ip` and Windows/Mac we use `Docker-Toolbox` ip
       - Run command `minikube ip` to get the ip address of minikube or use `minikube dashboard` and Navigate to Ingresses Select desired ingress service to get the ip address of minikube
-    8. Access `auth` microservice from browser `http://ingress-nginx-controller/auth/currentuser`
+    8. Access `auth` microservice from browser `http://dev.ticketing.dev/api/users/currentuser`
 
 
 #### Trouble Shooting
