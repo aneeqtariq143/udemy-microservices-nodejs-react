@@ -1,5 +1,19 @@
  # Udemy - Microservices with Node.js and React
 
+# Start Project
+
+## Start Minikube
+```bash
+minikube start
+minikube dashboard # To access kubernetes dashboard
+```
+
+## Start Skaffold
+```bash
+skaffold dev
+```
+
+
 ## Section 1 to 4
 
 
@@ -137,6 +151,24 @@ Each service has its own folder, common libraries shared between all the resourc
       - Note: In linux we use `minikube ip` and Windows/Mac we use `Docker-Toolbox` ip
       - Run command `minikube ip` to get the ip address of minikube or use `minikube dashboard` and Navigate to Ingresses Select desired ingress service to get the ip address of minikube
     8. Access `auth` microservice from browser `http://dev.ticketing.dev/api/users/currentuser`
+
+
+#### Folder & Files Organizational Structure
+1. Each service has its own folder
+   1. Each route handler has its own file inside `src/routes` folder
+2. Common libraries shared between all the resources
+   1. **Normalize Response**. Send a `Status Code` and `Error Message` in a consistent format. All the microservices should follow the same format.
+      1. **Tip**: Create a abstract class `CustomError` and extend it in all the services.
+      2. **Async Error Handler**: Use ExpressJS Async Errors package `npm install express-async-errors --save`. By using this package, all the error throws from async functions start working properly.
+3. `infra` folder contains all the kubernetes configuration files
+4. 
+
+
+#### Libraries Used
+1. `express-validator` for validation. [Documentation](https://express-validator.github.io/docs/)
+   1. Install `express-validator` library `npm install --save express-validator`
+2. `express-async-errors` ExpressJS Async Errors package. By using this package, all the error throws from async functions start working properly [Documentation](https://www.npmjs.com/package/express-async-errors)
+   1. Install `express-async-errors` library `npm install express-async-errors --save`
 
 
 #### Trouble Shooting
