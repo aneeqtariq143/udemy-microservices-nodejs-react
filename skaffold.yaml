@@ -3,6 +3,8 @@ kind: Config
 metadata:
   name: udemy-microservices-nodejs-react
 build:
+#  local:
+#    push: false
   artifacts:
     - image: aneeqtariq143/udemy-microservices-nodejs-react-auth-service
       context: auth

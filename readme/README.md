@@ -169,6 +169,21 @@ Each service has its own folder, common libraries shared between all the resourc
    1. Install `express-validator` library `npm install --save express-validator`
 2. `express-async-errors` ExpressJS Async Errors package. By using this package, all the error throws from async functions start working properly [Documentation](https://www.npmjs.com/package/express-async-errors)
    1. Install `express-async-errors` library `npm install express-async-errors --save`
-
+3. `mongoose` MongoDB object modeling tool designed to work in an asynchronous environment. [Documentation](https://mongoosejs.com/docs/guide.html)
+   1. Install `mongoose` library `npm install mongoose @types/mongoose --save`
+      - Mongoose is not work well with typescript.
+        1. Issue#1: "While Creating a new User document, Typescript wants to make sure we are providing the correct properties - Mongoose does not make this easy."
+        ```javascript
+        // Solution to Issue#1: Solve the issue of TypeScript not being able to infer the type of the properties of the User model
+        // In Mongoose, statics allows you to add static methods to your schema.
+        // Static methods are available on the model (class) itself, rather than on individual instances of the model
+        // (attrs: UserAttrs): This defines the parameter that the build method takes
+        // Through this function, we can ensure that the user is created with the correct properties
+        userSchema.statics.build = (attrs: UserAttrs) => {
+            return new User(attrs);
+         };
+        ```
+        2. Issue#2: "The properties that we pass to the use constructor don't necessarily match up with the properties available on the User model" or we can say "Issue number two was related to the fact that these set of properties that we pass in to create a new user document are different than the properties that actually exist on that document".
+4. 
 
 #### Trouble Shooting
