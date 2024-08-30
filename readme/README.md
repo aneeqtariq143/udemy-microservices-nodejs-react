@@ -153,11 +153,76 @@ Each service has its own folder, common libraries shared between all the resourc
     8. Access `auth` microservice from browser `http://dev.ticketing.dev/api/users/currentuser`
 
 
+### Authenticated Strategies and Options
+#### 1. Fundamental Authentication Strategies
+![img_26.png](img_26.png)
+
+##### Option#1: Individual Services rely on the auth services
+![img_27.png](img_27.png)
+
+###### Downside of Option#1
+- **Downside**: If the `auth` service goes down, all the other services will not be able to authenticate users.
+
+##### Option#1.1: Individual Services rely on the auth service as a gateway
+![img_28.png](img_28.png)
+
+###### Downside of Option#1.1
+- **Downside**: If the `auth` service goes down, all the other services will not be able to authenticate users.
+
+##### Option#2: Individual services know how to authenticate a user
+![img_29.png](img_29.png)
+
+###### How?
+- **How**: Shared Common code between all the services. Each service has its own copy of the code that knows how to authenticate a user.
+
+###### Downside of Option#2
+- **Downside**: Duplicate Code.
+
+##### Comparison
+![img_31.png](img_31.png)
+
+#### 5. Reminder on Cookies vs JWT's
+![img_32.png](img_32.png)
+
+#### 6. Microservices Auth Requirements
+![img_33.png](img_33.png)
+
+#### 8. Use Cookies to send JWT Token
+![img_34.png](img_34.png)
+
+###### Why not Encrypt Cookies?
+- **Why not Encrypt Cookies?**: We don't need to encrypt the content (JWT) of cookie because JWT's are tamper resistant. If someone tries to change the content of the JWT, the server will reject it.
+- **Why Encrypt Cookies?**: We can encrypt the cookie to hide the content from the user. But it's not necessary because the content of the JWT is already encrypted.
+- **Why Encrypt Cookies?**: We can encrypt the cookie to if we store sensitive data other than JWT in the cookie.
+
+###### Library Used to manage cookies
+- **Library Used**: `cookie-session` library is used to manage cookies in the Node.js application. [Documentation](https://www.npmjs.com/package/cookie-session)
+  - Install `cookie-session` library `npm install cookie-session @types/cookie-session --save`
+  - `cookie-session` is a middleware that stores the session data on the client within a cookie. It is signed with a secret to prevent tampering.
+
+#### 13. Securely Storing Secrets and Accessing Secrets from different pods with Kubernetes
+![img_35.png](img_35.png)
+![img_36.png](img_36.png)
+
+###### **Notes on Secrets**
+- **Secrets**: Secrets are a way to store sensitive information in Kubernetes. Secrets are stored in base64 encoded format.
+- **Accessing Secrets**: Secrets can be accessed by pods using environment variables or volumes.
+- **Different Types of Secrets**: There are different types of secrets like generic, docker-registry, tls etc. we can create is some information related to accessing a repository of Docker images That is a different kind of secret. We are creating a generic secret which means this is just a all purpose kind of secret piece of information the name of the secret.
+- **Creating Secrets in Dev Environments (imperative approach)**: The reason that we are using this imperative approach right here is because we don't really want to have a config file that lists out the value of our secrets. We don't necessarily have to list out the value of a secret inside the config file. We can technically use a local environment variable on your machine and then refer to that from the config file.
+  - **Important Note**: The one downside to it is that anytime you start to create or spin up a new cluster you are going to have to remember all the different secrets that you had created over time.
+- **Creating Secrets in Production Environments (declarative approach)**: We will write config file approach
+- Example of creating a secret in Kubernetes
+  ```bash
+  # Create a secret
+  kubectl create secret generic jwt-secret --from-literal=JWT_KEY=58092296374621923899602564172863
+  ```
+
 #### Folder & Files Organizational Structure
 1. Each service has its own folder
    1. Each route handler has its own file inside `src/routes` folder
 2. Common libraries shared between all the resources
-   1. **Normalize Response**. Send a `Status Code` and `Error Message` in a consistent format. All the microservices should follow the same format.
+   1. **Must be understood by the many languages**: The common libraries should be written in a language that can be understood by many languages, because different services can be written in different languages like Java, .Net etv. For example, a common library written in JavaScript can be used by both Node.js and React.
+   2. **Normalize Response**. Send a `Status Code` and `Error Message` in a consistent format. All the microservices should follow the same format.
       1. **Tip**: Create a abstract class `CustomError` and extend it in all the services.
       2. **Async Error Handler**: Use ExpressJS Async Errors package `npm install express-async-errors --save`. By using this package, all the error throws from async functions start working properly.
 3. `infra` folder contains all the kubernetes configuration files
@@ -184,6 +249,9 @@ Each service has its own folder, common libraries shared between all the resourc
          };
         ```
         2. Issue#2: "The properties that we pass to the use constructor don't necessarily match up with the properties available on the User model" or we can say "Issue number two was related to the fact that these set of properties that we pass in to create a new user document are different than the properties that actually exist on that document".
-4. 
+4. `cookie-session` library is used to manage cookies in the Node.js application. `cookie-session` is a middleware that stores the session data on the client within a cookie. It is signed with a secret to prevent tampering. [Documentation](https://www.npmjs.com/package/cookie-session)
+   1. Install `cookie-session` library `npm install cookie-session @types/cookie-session --save`
+5. `jsonwebtoken` library is used to generate and verify JWT tokens. [Documentation](https://www.npmjs.com/package/jsonwebtoken)
+   1. Install `jsonwebtoken` library `npm install jsonwebtoken @types/jsonwebtoken --save`
 
 #### Trouble Shooting

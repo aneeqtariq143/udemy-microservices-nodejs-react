@@ -29,6 +29,12 @@ spec:
         - name: auth
           # Image is the image of the container
           image: aneeqtariq143/udemy-microservices-nodejs-react-auth-service
+          env:
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: JWT_KEY
 ---
 # apiVersion is the version of the API
 apiVersion: v1
