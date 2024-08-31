@@ -217,6 +217,96 @@ Each service has its own folder, common libraries shared between all the resourc
   kubectl create secret generic jwt-secret --from-literal=JWT_KEY=58092296374621923899602564172863
   ```
 
+### 10. Testing Isolated Microservices
+
+#### 4. Index to App Refactor
+The reason for this refactor is to make the app listen to the port only, So when `supertest` runs the test, it may start the server on the default port or assign a random (ephemeral) port.
+![img_37.png](img_37.png)
+
+#### 5. A Few Dependencies
+1. `jest` library is used for testing. [Documentation](https://jestjs.io/docs/en/getting-started)
+   1. Install `jest` library `npm install jest @types/jest ts-jest supertest @types/supertest mongodb-memory-server --save-dev`
+
+#### 6. Test Environment Setup
+1. **Initialize Configuration**: `npm init jest@latest`
+2. Create a `./src/test` folder in the root directory of the project
+2. Create a `setup.ts` file in the `test` folder
+```typescript
+import {MongoMemoryServer} from "mongodb-memory-server";
+import mongoose from "mongoose";
+import {app} from "../app";
+
+// Start Set up the in-memory MongoDB database
+let mongo: any;
+beforeAll(async () => {
+    // Create a new instance of MongoDB in memory
+    const mongo = new MongoMemoryServer();
+    // Get the URI of the in-memory MongoDB instance
+    const mongoUri = await mongo.getUri();
+
+    await mongoose.connect(mongoUri);
+});
+
+// Clear the database before each test
+beforeEach(async () => {
+    // Get all the collections in the database
+    const collections = await mongoose.connection.db?.collections();
+
+
+    // Delete all the collections
+    if (collections) {
+        for (let collection of collections) {
+            await collection.deleteMany({});
+        }
+    }
+});
+
+// Close the connection to the in-memory database and stop the instance
+afterAll(async () => {
+    await mongoose.connection.close();
+    await mongoose.disconnect();
+});
+// End Set up the in-memory MongoDB database
+```
+3. set configuration `jest.config.json` file to run the `setup.ts` file before running the tests
+```typescript
+import type { Config } from 'jest';
+
+console.log('./test/setup.ts')
+const config: Config = {
+preset: 'ts-jest', // Use ts-jest preset
+testEnvironment: 'node', // Set the test environment to Node.js
+transform: {
+'^.+\\.ts$': 'ts-jest', // Transform TypeScript files using ts-jest
+},
+moduleFileExtensions: ['ts', 'js', 'json', 'node'], // Recognize these file extensions
+setupFilesAfterEnv: ['./src/test/setup.ts'], // Include the setup file
+};
+
+export default config;
+```
+4. Update `package.json` file to run the `npm run test`
+```json
+"scripts": {
+"test": "jest --watchAll --no-cache --detectOpenHandles"
+},
+```
+5. Create a folder named `__test__` in the same directory as the file you want to test. Inside the `__test__` folder, create a test file with the same name as the original file but with `.test` added before the file extension. **For example**, to write a test for the file `./src/route/signup.ts`, you would create a `__test__` folder in `./src/route` and then create a file named `signup.test.ts` inside that folder.
+6. **Important Note**: if our script contains `Environment Variables` then we need to set the `Environment Variables` in the `setup.ts` file. For example, if we have `JWT_KEY` in the `.env` file then we need to set it in the `setup.ts` file. There are many other ways to set the `Environment Variables` in the `setup.ts` file. For example, we can use `dotenv` library to set the `Environment Variables` in the `setup.ts` file. But the simplest way is to set the `Environment Variables` in the `setup.ts` file. For example, if we have `JWT_KEY` in the `.env` file then we can set it in the `setup.ts` file as shown below.
+   ```typescript
+   beforeAll(async () => {
+        process.env.JWT_KEY = 'testjwtkey';
+        // Create a new instance of MongoDB in memory
+        const mongo = new MongoMemoryServer();
+        // Get the URI of the in-memory MongoDB instance
+        const mongoUri = await mongo.getUri();
+
+        await mongoose.connect(mongoUri);
+   });
+   ```
+6. 
+
+
 #### Folder & Files Organizational Structure
 1. Each service has its own folder
    1. Each route handler has its own file inside `src/routes` folder
@@ -253,5 +343,7 @@ Each service has its own folder, common libraries shared between all the resourc
    1. Install `cookie-session` library `npm install cookie-session @types/cookie-session --save`
 5. `jsonwebtoken` library is used to generate and verify JWT tokens. [Documentation](https://www.npmjs.com/package/jsonwebtoken)
    1. Install `jsonwebtoken` library `npm install jsonwebtoken @types/jsonwebtoken --save`
+6. `jest` library is used for testing. [Documentation](https://jestjs.io/docs/en/getting-started) and `supertest` library is used to test HTTP requests/responses. [Documentation](https://www.npmjs.com/package/supertest) and `mongodb-memory-server` library is used to create an in-memory MongoDB database for testing. [Documentation](https://www.npmjs.com/package/mongodb-memory-server)
+   1. Install `jest` library `npm install jest @types/jest ts-jest supertest @types/supertest mongodb-memory-server --save-dev`
 
 #### Trouble Shooting

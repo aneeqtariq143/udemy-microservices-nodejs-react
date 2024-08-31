@@ -11,7 +11,8 @@ WORKDIR /app
 COPY package.json .
 
 # Installs the dependencies listed in the package.json file.
-RUN npm install
+# The --omit=dev flag tells npm to only install the dependencies listed in the dependencies section of the package.json file, not the devDependencies section.
+RUN npm install --omit=dev
 
 # Copies the application code from the host machine to the working directory of the Docker container.
 COPY . .
