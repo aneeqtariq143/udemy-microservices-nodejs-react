@@ -304,8 +304,69 @@ export default config;
         await mongoose.connect(mongoUri);
    });
    ```
-6. 
+   
 
+### 11. Integrating a Server-Side-Rendered React App Microservice
+
+1. **Create Client**: Create a `client` folder in a project root directory for `Client Service`
+2. **Install NextJs**: run command `npx create-next-app client`
+3. **Install Dependencies**: `npm install --save clsx axios`
+   1. **clsx**: A tiny (228B) utility for constructing `className` strings conditionally.
+   2. **axios**: Promise based HTTP client for the browser and node.js
+4. **Run Client**: run command `npm run dev` to verify the client is running
+5. **Building a NextJs Docker Image**: Create a `client/Dockerfile` file
+   1. **Create a Development Image for deployment**: Check Dockerfile.dev for Development image
+   2. **Create a Production Image for deployment**: Check Dockerfile.prod for production image
+   3. Use the appropriate Dockerfile for development or production
+      - **Development**: Use `Dockerfile.dev` for development in `skaffold.yaml` file
+      - **Production**: `docker build -f Dockerfile.prod -t aneeqtariq143/udemy-microservices-nodejs-react-client-service .` when we need to push the image to the docker hub 
+6. **Build Docker Image**: run command `docker build -t aneeqtariq143/udemy-microservices-nodejs-react-client-service .`
+7. **Create kubernetes `Deployment` file**: Create a `infra/k8s/client-depl.yaml` file
+8. **Create/Update `skaffold.yaml` config file**: To sync the application files and kubernetes deployment with the local machine
+9. **Helpers and Hooks**
+   1. **client/helpers/build-axios-client**: Used to create an axios client with the base URL which help to make a request from Client side and Server Side to the `cross-namespace` services
+   2. **client/hooks/use-request**: Used to make a request from the client side to the backend services and set the error message and loading state
+
+
+### How Can we make request to other microservices from the other microservice
+Watch the videos from 16 to 20
+![img_38.png](img_38.png)
+
+#### Option#1 (Not a Good Option)
+![img_39.png](img_39.png)
+We can use microservice service URL to reach out the other service. for example we want to make a request from server side `client` microservice to `auth` microservice then we can use the auth microservice url `http://auth-srv/`.
+
+- **Note**: We access services using that `http://auth-srv` style only when they are in the same namespace. If they are in different namespaces, we need to use the full URL like `http://auth-srv.namespace.svc.cluster.local`. But in our case, all the services are in the same namespace so we can use the `http://auth-srv` style.
+![img_41.png](img_41.png)
+
+- Why Not a good option: Reason
+  - client code is going to know the exact service name for every different thing it's ever going to want to reach out to. So if we start to introduce other services we're going to have to encode those exact service names into our NextJs application And that's just a little bit of a nightmare.
+  - The other problem is that we need to somehow know not only those service names but also which route corresponds to which service
+
+
+#### Option#2 (Good Option)
+![img_40.png](img_40.png)
+we need to fetch data from a service inside of our kubernettes cluster. ***we're going to have our NextJS. application reach out to an `ingress-nginx` which is already running, inside the cluster `ingress-nginx` can then figure out where to send this request off to based upon just the path by itself***
+
+So all we have to do is say hey `ingress-nginx` I'm trying to make a request to API users current user and `ingress-nginx` already has the set of relevant rules and we put together right here. It knows how to take a request to some arbitrary endpoint and map it up to some service and some actual port.
+
+***How do we reach out `ingress-nginx` from inside the `client` service cluster? There's one other little challenge as well, Remember our entire authentication mechanism right now works based upon cookies. And so as we're talking about somehow fetching the current user we need to keep in mind in the very back of our head that we have some requests coming into our next as application and it includes a cookie and at some point in time we're going to make a follow up request from inside of next and that follow up request is probably going to have to include that cookie information right now back inside of our index.ts file when this gets executed on the server or inside of next we do not have access to the browser to automatically manage that cookie or anything like that.***
+
+***Solution of cookie: We take a look at the original incoming request we extract that cookie off there and include it in the request off to `ingress-nginx` so that when this request finally gets routed through `ingress-nginx` over to the all service and I like that right there the all service will see that incoming cookie***
+
+- **Note**: If they are in different namespaces, we need to use the full URL like `http://[name-of-service].[namespace].svc.cluster.local`.
+  ![img_43.png](img_43.png)
+
+##### Notes on Namespace
+- **Namespace**: A way to divide cluster resources between multiple users (via resource quota) or multiple projects (via resource isolation).
+- **Default Namespace**: If you don't specify a namespace, Kubernetes will use the default namespace.
+- **Our Case**: We are using the default namespace for all the microservices, because we didn't specify any namespace.
+- **How to build URL for different namespaces**: If they are in different namespaces, we need to use the full URL like `http://[name-of-service].[namespace].svc.cluster.local`.
+  - **Identify the namespace**: First we need to identify the namespace we try to reach .Run the command `kubectl get namespaces` to get the list of all the namespaces.
+  - **Identify the service name**: Run the command `kubectl get services -n [namespace]` to get the list of all the services in the namespace.
+  - **Identify the service URL**: Run the command `kubectl describe service [service-name] -n [namespace]` to get the URL of the service.
+  - **Build the URL**: Use the URL of the service to build the URL like `http://[name-of-service].[namespace].svc.cluster.local`.
+  - We can also create a `ExternalName` type service so we can follow easier pattern. [Documentation](https://kubernetes.io/docs/concepts/services-networking/service/#externalname)
 
 #### Folder & Files Organizational Structure
 1. Each service has its own folder

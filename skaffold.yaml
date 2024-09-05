@@ -3,8 +3,8 @@ kind: Config
 metadata:
   name: udemy-microservices-nodejs-react
 build:
-#  local:
-#    push: false
+  local:
+    push: false
   artifacts:
     - image: aneeqtariq143/udemy-microservices-nodejs-react-auth-service
       context: auth
@@ -13,6 +13,15 @@ build:
       sync:
         manual:
           - src: 'src/**/*.ts'
+            dest: .
+    - image: aneeqtariq143/udemy-microservices-nodejs-react-client-service
+      context: client
+      docker:
+        dockerfile: Dockerfile.dev
+      sync:
+        manual:
+          # Sync all the ts and tsx files in the src directory
+          - src: '**/*.{ts,tsx}'
             dest: .
 manifests:
   rawYaml:

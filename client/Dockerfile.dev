@@ -1,0 +1,50 @@
+# Use the official Node.js image as the base image
+FROM node:18-alpine AS base
+
+# Set the working directory
+WORKDIR /app
+
+# Install necessary packages
+RUN apk add --no-cache bash
+
+# Install dependencies only when needed
+FROM base AS deps
+
+# Install libc6-compat for compatibility reasons
+RUN apk add --no-cache libc6-compat
+
+# Copy package manager files to install dependencies
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+
+RUN \
+  if [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
+  elif [ -f package-lock.json ]; then npm ci; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm install --frozen-lockfile; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
+
+# Setup for development
+FROM base AS dev
+
+# Set the working directory
+WORKDIR /app
+
+# Copy node modules and lock files from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy the application source code
+COPY . .
+
+# Set environment variables for development
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV HOSTNAME="0.0.0.0"
+
+# Install additional development dependencies (optional)
+# RUN npm install --save-dev your-dev-dependency
+
+# Expose the application port
+EXPOSE 3000
+
+# Start Next.js in development mode
+CMD ["npm", "run", "dev"]

@@ -1,0 +1,56 @@
+# This file is used to create a deployment for the auth service
+apiVersion: apps/v1
+# Kind is the type of resource we are creating
+kind: Deployment
+# Metadata is data about the resource
+metadata:
+  # Name is the name of the resource
+  name: client-depl
+# Spec is the configuration of the resource
+spec:
+  # Replicas is the number of pods we want to run
+  replicas: 1
+  # Selector is used to select which pods this deployment is going to manage
+  selector:
+    matchLabels:
+      # app: auth is the label of the pods
+      app: client
+  # Template is the configuration of the pods
+  template:
+    metadata:
+      # Labels is the labels of the pods
+      labels:
+        # app: auth is the label of the pods
+        app: client
+      # Spec is the configuration of the containers
+    spec:
+      containers:
+        # - name is the name of the container
+        - name: auth
+          # Image is the image of the container
+          image: aneeqtariq143/udemy-microservices-nodejs-react-client-service
+---
+# apiVersion is the version of the API
+apiVersion: v1
+# Kind is the type of resource we are creating
+kind: Service
+# Metadata is data about the resource
+metadata:
+  # Name is the name of the resource
+  name: client-srv
+# Spec is the configuration of the resource
+spec:
+  # Selector is used to select which pods this service is going to route traffic to
+  selector:
+    # app: auth is the label of the pods
+    app: client
+  # Ports is the list of ports
+  ports:
+    # - name is the name of the port (Not Important) but it helps logging
+    - name: client
+      # - protocol is the protocol of the port
+      protocol: TCP
+      # port is the port of the service
+      port: 3000
+      # targetPort is the port of the pods
+      targetPort: 3000

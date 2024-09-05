@@ -20,6 +20,9 @@ spec:
       http:
         # Paths is the list of paths
         paths:
+          # The path priority is from top to bottom in the list, this means that the first path will be checked first and then the second and so on.
+          # If we set the path as /?(.*) this means that it will match any path that starts with / and then anything after that
+          # That's why we need to set the path as /api/users/?(.*) to match the /api/users path first and then anything after that
           # - path is the path of the rule
           - path: /api/users/?(.*)
             # PathType is the type of the path
@@ -29,5 +32,16 @@ spec:
             backend:
               service:
                 name: auth-srv
+                port:
+                  number: 3000
+          # - path is the path of the rule
+          - path: /?(.*)
+            # PathType is the type of the path
+            # Use "Prefix" for exact match and "ImplementationSpecific" for regex
+            pathType: Prefix
+            # Backend is the configuration of the backend
+            backend:
+              service:
+                name: client-srv
                 port:
                   number: 3000
