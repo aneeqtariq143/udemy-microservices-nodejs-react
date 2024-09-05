@@ -7,8 +7,7 @@ import {currentUserRouter} from "./routes/current-user";
 import {signinRouter} from "./routes/signin";
 import {signoutRouter} from "./routes/signout";
 import {signupRouter} from "./routes/signup";
-import {NotFoundError} from './errors/not-found-error';
-import {errorHandler} from './middlewares/error-handler';
+import {NotFoundError, errorHandler} from '@atgitix/common';
 
 const app = express();
 app.set('trust proxy', true); // Trust traffic as being secure even though it is coming from a proxy

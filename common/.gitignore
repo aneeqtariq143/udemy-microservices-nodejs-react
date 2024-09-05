@@ -1,0 +1,4 @@
+# Add directories and files to ignore which should not be pushed to the repository
+.idea
+build
+node_modules

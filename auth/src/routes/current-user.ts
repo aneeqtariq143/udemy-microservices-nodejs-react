@@ -1,6 +1,5 @@
 import express, {Router, Request, Response} from "express";
-import {requireAuth} from "../middlewares/require-auth";
-import {currentUser} from "../middlewares/current-user";
+import {requireAuth, currentUser} from "@atgitix/common";
 
 const router: Router = express.Router();
 
