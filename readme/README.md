@@ -525,7 +525,28 @@ export * from './middlewares/validate-request';
 ```
 8. **Updating Import Statements**: Update the import statements in the `auth` service to import the shared code from the common library.
 9. **Make changes to common library**: Make changes to the common library and publish the changes to the npm registry.
-10. **Update the common library**: Update the common library in the `auth` service by running the `npm update @atgitix/common` command.
+10. **Update the common library**: Update the common library in the `auth` service by running the `npm update @atgitix/common` command or we can use `npm install @atgitix/common@1.0.5`.
+    - **Note**:  `npm update @atgitix/common` will not update the `package.json` file. It will only update the `package-lock.json` file. If we want to update the `package.json` file, we have to use `npm install @atgitix/common@1.0.5`.
+    - **How to check the latest version of the common library**: Run the `npm show @atgitix/common version` command to check the latest version of the common library.
+
+### Ticketing Microservice (13. Create-Read-Update-Destroy Server Setup)
+#### Ticketing Service Setup
+![img_45.png](img_45.png)
+
+- **Create a `tickets` folder in a project root directory for `Tickets Service`**
+- **Copy files from `auth` service to `tickets` service**: `.dockerignore`, `.gitignore`, `Dockerfile`, `jest.config.ts`, `tsconfig.json`, `package.json`, `src/index.ts`, `src/test`
+- **Install Dependencies**: Copy the dependencies from the `auth` service to the `tickets` service
+- **Search and replace the `auth` with `tickets`**: Search and replace the `auth` with `tickets` in the `tickets` service
+- **Build Docker Image**: Build the Docker image for the `tickets` service. `docker build -t aneeqtariq143/udemy-microservices-nodejs-react-tickets-service .`
+- **Create kubernetes `Deployment` file**: Create a `infra/k8s/tickets-depl.yaml` file.
+  - **Note**: In our case it is almost identical to the `auth` service `Deployment` file. Copy and paste the content of the `auth` service `Deployment` file to the `tickets` service `Deployment` file. Then search and replace the `auth` with `tickets` in the `tickets` service `Deployment` file.
+- **Create/Update `skaffold.yaml` config file**: To sync the application files and kubernetes deployment with the local machine
+- 
+
+#### Ticketing Service (API Endpoints)
+![img_46.png](img_46.png)
+
+
 
 #### Folder & Files Organizational Structure
 

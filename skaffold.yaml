@@ -23,6 +23,14 @@ build:
           # Sync all the ts and tsx files in the src directory
           - src: '**/*.{ts,tsx}'
             dest: .
+    - image: aneeqtariq143/udemy-microservices-nodejs-react-tickets-service
+      context: tickets
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: 'src/**/*.ts'
+            dest: .
 manifests:
   rawYaml:
     - infra/k8s/*

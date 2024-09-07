@@ -1,11 +1,11 @@
-# This file is used to create a deployment for the auth service
+# This file is used to create a deployment for the tickets service
 apiVersion: apps/v1
 # Kind is the type of resource we are creating
 kind: Deployment
 # Metadata is data about the resource
 metadata:
   # Name is the name of the resource
-  name: auth-depl
+  name: tickets-depl
 # Spec is the configuration of the resource
 spec:
   # Replicas is the number of pods we want to run
@@ -13,25 +13,25 @@ spec:
   # Selector is used to select which pods this deployment is going to manage
   selector:
     matchLabels:
-      # app: auth is the label of the pods
-      app: auth
+      # app: tickets is the label of the pods
+      app: tickets
   # Template is the configuration of the pods
   template:
     metadata:
       # Labels is the labels of the pods
       labels:
-        # app: auth is the label of the pods
-        app: auth
+        # app: tickets is the label of the pods
+        app: tickets
       # Spec is the configuration of the containers
     spec:
       containers:
         # - name is the name of the container
-        - name: auth
+        - name: tickets
           # Image is the image of the container
-          image: aneeqtariq143/udemy-microservices-nodejs-react-auth-service
+          image: aneeqtariq143/udemy-microservices-nodejs-react-tickets-service
           env:
             - name: MONGO_URI
-              value: 'mongodb://auth-mongo-srv:27017/auth'
+              value: 'mongodb://tickets-mongo-srv:27017/tickets'
             - name: JWT_KEY
               valueFrom:
                 secretKeyRef:
@@ -45,16 +45,16 @@ kind: Service
 # Metadata is data about the resource
 metadata:
   # Name is the name of the resource
-  name: auth-srv
+  name: tickets-srv
 # Spec is the configuration of the resource
 spec:
   # Selector is used to select which pods this service is going to route traffic to
   selector:
-    # app: auth is the label of the pods
-    app: auth
+    # app: tickets is the label of the pods
+    app: tickets
   # Ports is the list of ports
   ports:
-    - name: auth
+    - name: tickets
       # - protocol is the protocol of the port
       protocol: TCP
       # port is the port of the service

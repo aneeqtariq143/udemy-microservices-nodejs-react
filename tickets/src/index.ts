@@ -1,6 +1,6 @@
 import * as mongoose from "mongoose";
 import { app } from "./app";
-import process from "node:process";
+import * as process from "node:process";
 
 const start = async () => {
     // Check if the JWT_KEY environment variable is defined

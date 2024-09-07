@@ -7,6 +7,8 @@ export const errorHandler = (err: Error, req: Request, res: Response, next: Next
 
     }
 
+    // Log the error for debugging purposes otherwise send a generic error message
+    console.log(err);
     res.status(400).send({
         errors: [{ message: 'Something went wrong' }]
     });
