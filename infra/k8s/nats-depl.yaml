@@ -1,11 +1,11 @@
-# This file is used to create a deployment for the tickets service
+# This file is used to create a deployment for the auth service
 apiVersion: apps/v1
 # Kind is the type of resource we are creating
 kind: Deployment
 # Metadata is data about the resource
 metadata:
   # Name is the name of the resource
-  name: tickets-depl
+  name: nats-depl
 # Spec is the configuration of the resource
 spec:
   # Replicas is the number of pods we want to run
@@ -13,38 +13,37 @@ spec:
   # Selector is used to select which pods this deployment is going to manage
   selector:
     matchLabels:
-      # app: tickets is the label of the pods
-      app: tickets
+      # app: auth is the label of the pods
+      app: nats
   # Template is the configuration of the pods
   template:
     metadata:
       # Labels is the labels of the pods
       labels:
-        # app: tickets is the label of the pods
-        app: tickets
+        # app: auth is the label of the pods
+        app: nats
       # Spec is the configuration of the containers
     spec:
       containers:
         # - name is the name of the container
-        - name: tickets
+        - name: nats
           # Image is the image of the container
-          image: aneeqtariq143/udemy-microservices-nodejs-react-tickets-service
-          env:
-            - name: NATS_CLIENT_ID
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: NATS_URL
-              value: 'http://nats-srv:4222'
-            - name: NATS_CLUSTER_ID
-              value: ticketing
-            - name: MONGO_URI
-              value: 'mongodb://tickets-mongo-srv:27017/tickets'
-            - name: JWT_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: jwt-secret
-                  key: JWT_KEY
+          image: nats-streaming:0.17.0
+          args: [
+            "-p",
+            "4222",
+            "-m",
+            "8222",
+            "-hbi",
+            "5s",
+            "-hbt",
+            "5s",
+            "-hbf",
+            "2",
+            "-SD",
+            "-cid",
+            "ticketing", # Cluster ID which will be used to connect to the nats server from the microservices
+          ]
 ---
 # apiVersion is the version of the API
 apiVersion: v1
@@ -53,19 +52,26 @@ kind: Service
 # Metadata is data about the resource
 metadata:
   # Name is the name of the resource
-  name: tickets-srv
+  name: nats-srv
 # Spec is the configuration of the resource
 spec:
   # Selector is used to select which pods this service is going to route traffic to
   selector:
-    # app: tickets is the label of the pods
-    app: tickets
+    # app: auth is the label of the pods
+    app: nats
   # Ports is the list of ports
   ports:
-    - name: tickets
+    - name: nats-client
       # - protocol is the protocol of the port
       protocol: TCP
       # port is the port of the service
-      port: 3000
+      port: 4222
       # targetPort is the port of the pods
-      targetPort: 3000
+      targetPort: 4222
+    - name: nats-monitoring
+      # - protocol is the protocol of the port
+      protocol: TCP
+      # port is the port of the service
+      port: 8222
+      # targetPort is the port of the pods
+      targetPort: 8222

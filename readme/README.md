@@ -546,7 +546,128 @@ export * from './middlewares/validate-request';
 #### Ticketing Service (API Endpoints)
 ![img_46.png](img_46.png)
 
+### 14. NATS Streaming Server - An Event Bus Implementation
 
+#### 2. Three Important Items
+![img_47.png](img_47.png)
+
+##### Important Notes
+- **Client ID Generation**: The client ID should be unique for each client. Reason: If two clients have the same client ID, NATS refuses to connect to the second client. When Kubernetes auto-scaling the nodes, and if the multiple nodes has the same client ID, then the NATS will refuse to connect to the second node.
+  - We can use the `randomBytes` function from the `crypto` module to generate a unique client ID.
+- **Queue Groups**: If kubernetes auto-scales the nodes, then the same event will be processed by multiple nodes. To avoid this, we can use the `Queue Groups` feature of NATS. When we create a subscription with the same `Queue Group`, then the event will be processed by only one node.
+![img_48.png](img_48.png)
+- **setManualAckMode**: If we set the `setManualAckMode` to `true`, then we have to manually acknowledge the message. If we don't acknowledge the message, then the message will be redelivered to the same or another subscriber.
+  - **Note**: If we don't acknowledge the message, then the message will be redelivered to the same or another subscriber. So we have to make sure that we acknowledge the message after processing it.
+  - **Default timeout**: If we don't acknowledge the message within the default (30s) timeout, then the message will be redelivered to the same or another subscriber.
+  - **Default Behavior**: By default, the message is acknowledged automatically after processing it.
+- **Client Health Check**: Set the `heart beath configuration` to check the health of the client. If the client is not healthy, then the NATS server will disconnect the client.
+  - **Client Health Check Configuration**: we can set the configuration during `docker image` creation using `arg[]`.
+    ```dockerfile
+    "-hbi",
+    "5s",
+    "-hbt",
+    "5s",
+    "-hbf",
+    "2"
+    ```
+- **Graceful Shutdown**: We have to handle the `SIGINT` signal to gracefully shutdown the client. If we don't handle the `SIGINT` signal, then the client will not be able to gracefully shutdown.
+  - Example: 
+    ```javascript
+    stan.on('close', () => {
+        console.log('NATS connection closed!');
+        process.exit();
+    });
+    
+    
+    process.on('SIGINT', () => stan.close());
+    process.on('SIGTERM', () => stan.close());
+    ```
+- **setDeliverAllAvailable**: If we set the `setDeliverAllAvailable` to `true`, then the subscriber will receive all the events that were published before the subscriber was created. This is useful when we want to replay all the events.
+  - **Note**: Use this feature with caution because it can lead to a lot of events being processed by the subscriber whenever the subscriber is created/scaled up/restarted.
+  - **Note**: If we want to receive all the events that were published before and don't want to receive them again then use `setDurableName(service-name)`.
+  - **Scenario**: Assume we developed a new service and we want to replay all the events that were published before the service was created. We can set the `setDeliverAllAvailable` to `true` and `setDurableName(service-name)` to replay all the events. Using this approach, we can replay all the events that were published before and don't want to receive them again.
+  - **Important Note**: If we set the `setDeliverAllAvailable` to `true` and set the `setDurableName(service-name)`, but we don't pass the `queue group` to the subscription, then the subscriber will receive all the events that were published before and also receive them again. So we have to pass the `queue group` to the subscription then the subscriber will receive all the events whenever `serivce restarts`.
+  - **Example**: 
+    ```javascript
+    const options = stan.subscriptionOptions()
+        .setManualAckMode(true)
+        .setDeliverAllAvailable()
+        .setDurableName('service-name');
+    const subscription = stan.subscribe('subject', 'queue-group', options);
+    ```
+
+
+#### 3. Creating a NATS Streaming Deployment
+
+#### NATS Concurrency Issues
+- **Possible Issue#1**: Listener can fail to process the event.
+- **Possible Issue#2**: One Listener might run more quickly than another.
+- **Possible Issue#3**: NATS might think a client is still alive when it's dead.
+- **Possible Issue#4**: If we have multiple instances of the same service, then the same event will be processed by multiple instances.
+- **Solution**: Use the `version` field to handle the concurrency issues.
+  - **Version Field**: We can use the `version` field to handle the concurrency issues. When we publish an event, we can increment the `version` field. When we process the event, we can check the `version` field. If the `version` field is not equal to the `version` field in the database, then we can ignore the event.
+  - **Example**: when we add a new record to the database, we can increment the `version` field. When we update the record, we can increment the `version` field. When we delete the record, we can increment the `version` field. Then we pass the `version` field to the event. When we process the event, we can check the `version` field. If the `version` field is not equal to the `version` field in the database, then we can ignore the event.
+
+### 15. Connecting to NATS in a Node JS World
+we will create a `nats-wrapper` library in common (shared code) that will help to connect to the NATS server and handle the NATS client connection. We will use the `nats-wrapper` library in the other services like `auth` service to connect to the NATS server.
+![img_49.png](img_49.png)
+
+#### 2. NATS Common Shared Code
+1. **Base Listener**: Create Base class for the listener in `common/events/base-listener.ts` folder. It will help to connect to the NATS server and handle the NATS client connection.
+2. **Define Types**: We define the `subject` (Events Names used in microservices) and `data` type (like: TicketCreated) for the event in the `common/events/types` folder.
+3. 
+Example:
+![img_50.png](img_50.png)
+
+### 16. Managing a NATS Client
+
+#### Create NATS Client (Singleton) in microservices
+- This way we can make sure that we have only one instance of the NATS client in the microservices.
+- **To Prevent Circular Dependencies**: We create a separate file `nats-client.ts` then we import the `nats-client.ts` file in the `src/index.ts` file and `src/routes/create.ts` files.
+- Diagram Example
+![img_51.png](img_51.png)
+- **Note**: We need to `Gracefully Shutdown` the NATS client when the microservice is stopped. If we don't `Gracefully Shutdown` the NATS client, then the NATS server will not be able to disconnect the client and the client will be shown as connected to the NATS server.
+- To verify that NATS Gracefully Shutdown is working, we can run the `kubectl get pods` command and Delete the pod in which `NATS Gracefully Shutdown handle` you will see `NATS connection closed!` in console. Example `kubectl delete pod tickets-depl-7798767878-8fg7v`. If the NATS client is not `Gracefully Shutdown`, then the NATS client will be shown as connected to the NATS server.
+```typescript
+// src/index.ts
+ await natsWrapper.connect("ticketing", "abc", "http://nats-srv:4222");
+natsWrapper.client.on('close', () => {
+    console.log('NATS connection closed!');
+    process.exit();
+});
+process.on('SIGINT', () => natsWrapper.client.close());
+process.on('SIGTERM', () => natsWrapper.client.close());
+```
+
+#### 11. Handling Publish Failures
+- **Publish Failures**: If the NATS server goes down, then the client will not be able to publish the event. We have to handle the publish failures.
+- **Option#1: Retry Logic (Add Latency)**: We can use the `retry logic` to handle the publish failures. If the NATS server goes down, then the client will try to reconnect to the NATS server and publish the event.
+  - **Retry Logic Configuration**: We can set the `retry logic` configuration during `docker image` creation using `arg[]`.
+    ```dockerfile
+    "-reconnect",
+    "true",
+    "-maxReconnectAttempts",
+    "-1",
+    "-reconnectTimeWait",
+    "1000",
+    "-reconnectJitter",
+    "1000",
+    "-waitOnFirstConnect",
+    "true"
+    ```
+- **Option#2: Save the event into the database**: We can use the database `transaction` to store the `ticket` and `event` with additional column `status` in the database. Write a separate logic which run periodically and publish the events which are in `pending` status. If we fail to insert `ticket` or `event` in the database, then we can retry to insert the `ticket` and `event` in the database then database `transaction` will reverse all the database changes.
+
+#### 12. Fixing a Few Tests
+If we run the test in `ticketing` microservice, We will see some tests are failing. The reason they are failing is because we have added the `NATS client` in the `src/index.ts` file.
+- **Fixing Tests**: We have to fix the tests because we have added the `NATS client` in the `src/index.ts` file. We have to `mock` the `NATS client` in the tests.
+
+There are two options to fix them:
+1. **Option#1: Test environment actually connect to our NAT**: We can either try to have our test environment actually connect to our NAT server that's not super ideal because we don't really want to assume that we always have some running at Nats event bus whenever we're trying to run our tests that require us to always be running some copy of Nats on our local machine or some other mechanism to run it.
+2. **Option#2: Fake initialized Nats client**: We essentially redirect import statements while we are running our application in the test environment. We're going to get just to intercept that import statements. It's going to see that this file is trying to import the real Nats wrapper and we're going to instead have just add a redirect that import statement and import a fake copy of the Nats wrapper instead and inside there we will have a fake initialized Nats client.
+![img_52.png](img_52.png)
+   - **Note on fake implementation**: We need to implement the only required methods that are used in the tests. For example, we need to implement the `publish` method in the fake Nats client because the tests are using the `publish` method. We don't need to implement the other methods that are not used in the tests. 
+3. 
+  
 
 #### Folder & Files Organizational Structure
 

@@ -3,6 +3,14 @@ import {app} from "../../app";
 import {signin} from "../../test/auth-signup-cookie";
 import {TicketDoc} from "../../models/ticket";
 
+/**
+ * What's actually happening here is that Jest is mocking the nats-wrapper module.
+ * Instead of importing real `nats-wrapper` file, jest will look the identical file in __mocks__ folder and fake it
+ *
+ * It is better to include the jest.mock() in the `src/test/setup.ts` file to avoid including it in every test file.
+ */
+// jest.mock('../../nats-wrapper');
+
 const tickets = [
     { title: 'Concert', price: 50 },
     { title: 'Movie', price: 15 },

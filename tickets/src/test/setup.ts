@@ -3,6 +3,12 @@ import mongoose from "mongoose";
 import {app} from "../app";
 import request from "supertest";
 
+/**
+ * What's actually happening here is that Jest is mocking the nats-wrapper module.
+ * Instead of importing real `nats-wrapper` file, jest will look the identical file in __mocks__ folder and fake it
+ */
+jest.mock('../nats-wrapper');
+
 // Start Set up the in-memory MongoDB database
 let mongo: any;
 beforeAll(async () => {
@@ -17,6 +23,12 @@ beforeAll(async () => {
 
 // Clear the database before each test
 beforeEach(async () => {
+    /**
+     * Reset all mocks.
+     * We want to make sure that between every single test we reset that data that we're not somehow running a test and polluting one test with data from another 10.
+     */
+    jest.clearAllMocks();
+
     // Get all the collections in the database
     const collections = await mongoose.connection.db?.collections();
 

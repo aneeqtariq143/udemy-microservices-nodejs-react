@@ -2,8 +2,21 @@ import supertest from "supertest";
 import {app} from "../../app";
 import mongoose from "mongoose";
 import {signin} from "../../test/auth-signup-cookie";
-import {TicketDoc} from "../../models/ticket";
 import request from "supertest";
+/**
+ * Even though we are importing the natsWrapper from the `nats-wrapper` file, Jest will look for the identical file in the __mocks__ folder and fake it
+ * because we have included the jest.mock() in the `src/test/setup.ts` file.
+ * To verify this, you can `console.log(natsWrapper)` in this file, and you will see that it is a mock function.
+ */
+import {natsWrapper} from "../../nats-wrapper";
+
+/**
+ * What's actually happening here is that Jest is mocking the nats-wrapper module.
+ * Instead of importing real `nats-wrapper` file, jest will look the identical file in __mocks__ folder and fake it
+ *
+ * It is better to include the jest.mock() in the `src/test/setup.ts` file to avoid including it in every test file.
+ */
+// jest.mock('../../nats-wrapper');
 
 it('returns a 401 if the user is not authenticated', async () => {
     // Generate a valid MongoDB id
@@ -145,4 +158,36 @@ it('update the ticket', async () => {
 
     expect(ticketResponse.body.title).toEqual('Update Concert');
     expect(ticketResponse.body.price).toEqual(202);
+});
+
+it('publish an event', async () => {
+// Create a ticket with one user
+    const creatorCookie = signin();
+
+    if (!creatorCookie) {
+        throw new Error('Cookie is not defined');
+    }
+
+    const response = await request(app)
+        .post('/api/tickets')
+        .set('Cookie', creatorCookie)
+        .send({
+            title: 'Concert',
+            price: 20
+        })
+        .expect(201);
+
+    const updateResponse = await request(app)
+        .put(`/api/tickets/${response.body.id}`)
+        .set('Cookie', creatorCookie)
+        .send({
+            title: 'Update Concert',
+            price: 202
+        })
+        .expect(200);
+
+    expect(updateResponse.body.title).toEqual('Update Concert');
+    expect(updateResponse.body.price).toEqual(202);
+
+    expect(natsWrapper.client.publish).toHaveBeenCalled();
 });
