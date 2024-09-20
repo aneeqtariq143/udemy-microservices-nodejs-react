@@ -24,6 +24,21 @@ spec:
         app: auth
       # Spec is the configuration of the containers
     spec:
+      # Init containers run before the main application containers
+      initContainers:
+        # Init container to wait for MongoDB to be ready
+        - name: auth-wait-for-mongo
+          image: appropriate/curl  # Lightweight image with networking tools
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for MongoDB..."
+              until nc -z auth-mongo-srv 27017; do
+                echo "MongoDB is unavailable - sleeping"
+                sleep 5
+              done
+              echo "MongoDB is up - proceeding"
       containers:
         # - name is the name of the container
         - name: auth

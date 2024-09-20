@@ -24,6 +24,35 @@ spec:
         app: tickets
       # Spec is the configuration of the containers
     spec:
+      # Init containers run before the main application containers
+      initContainers:
+        # Init container to wait for NATS Streaming server to be ready
+        - name: tickets-wait-for-nats
+          image: appropriate/curl  # Lightweight image with networking tools
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for NATS Streaming server..."
+              until nc -z nats-srv 4222; do
+                echo "NATS is unavailable - sleeping"
+                sleep 5
+              done
+              echo "NATS is up - proceeding"
+
+        # Init container to wait for MongoDB to be ready
+        - name: tickets-wait-for-mongo
+          image: appropriate/curl  # Lightweight image with networking tools
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for MongoDB..."
+              until nc -z tickets-mongo-srv 27017; do
+                echo "MongoDB is unavailable - sleeping"
+                sleep 5
+              done
+              echo "MongoDB is up - proceeding"
       containers:
         # - name is the name of the container
         - name: tickets

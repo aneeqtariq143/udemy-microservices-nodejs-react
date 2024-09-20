@@ -44,6 +44,31 @@ spec:
             "-cid",
             "ticketing", # Cluster ID which will be used to connect to the nats server from the microservices
           ]
+          # Readiness Probe to check if NATS Streaming server is ready to accept connections
+          readinessProbe:
+              # TCP socket probe checks if the specified port is open and accepting connections
+              tcpSocket:
+                port: 4222  # Port to check for readiness
+              initialDelaySeconds: 15  # Time to wait before starting the first probe
+              periodSeconds: 10         # Frequency of probe execution
+              timeoutSeconds: 5         # Timeout for each probe attempt
+              failureThreshold: 3       # Number of consecutive failures before marking the pod as not ready
+              # Benefits:
+              # - Ensures that the NATS server is fully operational before routing traffic to it
+              # - Prevents the application from sending requests to an unready NATS server
+
+            # Liveness Probe to ensure the NATS Streaming server is running and responsive
+          livenessProbe:
+              # TCP socket probe checks if the specified port is open and accepting connections
+              tcpSocket:
+                port: 4222  # Port to check for liveness
+              initialDelaySeconds: 60  # Time to wait before starting the first liveness probe
+              periodSeconds: 30         # Frequency of probe execution
+              timeoutSeconds: 5         # Timeout for each probe attempt
+              failureThreshold: 3       # Number of consecutive failures before restarting the container
+              # Benefits:
+              # - Detects and recovers from situations where the NATS server becomes unresponsive
+              # - Ensures high availability by automatically restarting unhealthy pods
 ---
 # apiVersion is the version of the API
 apiVersion: v1
