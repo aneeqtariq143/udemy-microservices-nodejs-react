@@ -44,6 +44,16 @@ spec:
                 name: tickets-srv
                 port:
                   number: 3000
+          - path: /api/orders/?(.*)
+            # PathType is the type of the path
+            # Use "Prefix" for exact match and "ImplementationSpecific" for regex
+            pathType: Prefix
+            # Backend is the configuration of the backend
+            backend:
+              service:
+                name: orders-srv
+                port:
+                  number: 3000
           # - path is the path of the rule
           - path: /?(.*)
             # PathType is the type of the path

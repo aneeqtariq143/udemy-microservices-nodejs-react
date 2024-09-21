@@ -666,8 +666,21 @@ There are two options to fix them:
 2. **Option#2: Fake initialized Nats client**: We essentially redirect import statements while we are running our application in the test environment. We're going to get just to intercept that import statements. It's going to see that this file is trying to import the real Nats wrapper and we're going to instead have just add a redirect that import statement and import a fake copy of the Nats wrapper instead and inside there we will have a fake initialized Nats client.
 ![img_52.png](img_52.png)
    - **Note on fake implementation**: We need to implement the only required methods that are used in the tests. For example, we need to implement the `publish` method in the fake Nats client because the tests are using the `publish` method. We don't need to implement the other methods that are not used in the tests. 
-3. 
-  
+
+### Orders Microservice (17. Cross-Service Data Replication In Action)
+#### Scaffolding the Order Service
+![img_53.png](img_53.png)
+- **Create a `orders` folder in a project root directory for `Orders Service`**
+- **Copy files from `tickets` service to `orders` service**: `.dockerignore`, `.gitignore`, `Dockerfile`, `jest.config.ts`, `tsconfig.json`, `package.json`, `src/index.ts`, `src/app.ts`, `src/nats-wrapper.ts`
+- **Install Dependencies**: Copy the dependencies from the `tickets` service to the `orders` service
+- **Search and replace the `tickets` with `orders`**: Search and replace the `tickets` with `orders` in the `orders` service
+- **Build Docker Image**: Build the Docker image for the `orders` service. `docker build -t aneeqtariq143/udemy-microservices-nodejs-react-orders-service .`
+- **Create kubernetes `Deployment` file**: Create a `infra/k8s/orders-depl.yaml` file.
+    - **Note**: In our case it is almost identical to the `tickets` service `Deployment` file. Copy and paste the content of the `tickets` service `Deployment` file to the `orders` service `Deployment` file. Then search and replace the `tickets` with `orders` in the `orders` service `Deployment` file.
+- **Create/Update `skaffold.yaml` config file**: To sync the application files and kubernetes deployment with the local machine
+
+#### Orders Microservice Endpoints
+![img_54.png](img_54.png)
 
 #### Folder & Files Organizational Structure
 

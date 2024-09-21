@@ -1,0 +1,100 @@
+# This file is used to create a deployment for the tickets service
+apiVersion: apps/v1
+# Kind is the type of resource we are creating
+kind: Deployment
+# Metadata is data about the resource
+metadata:
+  # Name is the name of the resource
+  name: orders-depl
+# Spec is the configuration of the resource
+spec:
+  # Replicas is the number of pods we want to run
+  replicas: 1
+  # Selector is used to select which pods this deployment is going to manage
+  selector:
+    matchLabels:
+      # app: orders is the label of the pods
+      app: orders
+  # Template is the configuration of the pods
+  template:
+    metadata:
+      # Labels is the labels of the pods
+      labels:
+        # app: orders is the label of the pods
+        app: orders
+      # Spec is the configuration of the containers
+    spec:
+      # Init containers run before the main application containers
+      initContainers:
+        # Init container to wait for NATS Streaming server to be ready
+        - name: orders-wait-for-nats
+          image: appropriate/curl  # Lightweight image with networking tools
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for NATS Streaming server..."
+              until nc -z nats-srv 4222; do
+                echo "NATS is unavailable - sleeping"
+                sleep 5
+              done
+              echo "NATS is up - proceeding"
+
+        # Init container to wait for MongoDB to be ready
+        - name: orders-wait-for-mongo
+          image: appropriate/curl  # Lightweight image with networking tools
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for MongoDB..."
+              until nc -z orders-mongo-srv 27017; do
+                echo "MongoDB is unavailable - sleeping"
+                sleep 5
+              done
+              echo "MongoDB is up - proceeding"
+      containers:
+        # - name is the name of the container
+        - name: orders
+          # Image is the image of the container
+          image: aneeqtariq143/udemy-microservices-nodejs-react-orders-service
+          env:
+            - name: NATS_CLIENT_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NATS_URL
+              value: 'http://nats-srv:4222'
+            - name: NATS_CLUSTER_ID
+              value: ticketing
+            - name: MONGO_URI
+              value: 'mongodb://orders-mongo-srv:27017/orders'
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: JWT_KEY
+---
+# apiVersion is the version of the API
+apiVersion: v1
+# Kind is the type of resource we are creating
+kind: Service
+# Metadata is data about the resource
+metadata:
+  # Name is the name of the resource
+  name: orders-srv
+# Spec is the configuration of the resource
+spec:
+  # Selector is used to select which pods this service is going to route traffic to
+  selector:
+    # app: orders is the label of the pods
+    app: orders
+  # Ports is the list of ports
+  ports:
+    - name: orders
+      # - protocol is the protocol of the port
+      protocol: TCP
+      # port is the port of the service
+      port: 3000
+      # targetPort is the port of the pods
+      targetPort: 3000
