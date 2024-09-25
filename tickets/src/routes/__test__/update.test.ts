@@ -3,6 +3,7 @@ import {app} from "../../app";
 import mongoose from "mongoose";
 import {signin} from "../../test/auth-signup-cookie";
 import request from "supertest";
+import {Ticket} from "../../models/ticket";
 /**
  * Even though we are importing the natsWrapper from the `nats-wrapper` file, Jest will look for the identical file in the __mocks__ folder and fake it
  * because we have included the jest.mock() in the `src/test/setup.ts` file.
@@ -50,6 +51,37 @@ it('returns a 404 if the ticket is not found', async () => {
             price: 20
         })
         .expect(404);
+});
+
+it('rejects updates when ticket reserved', async () => {
+    const creatorCookie = signin();
+
+    if (!creatorCookie) {
+        throw new Error('Cookie is not defined');
+    }
+
+    const response = await request(app)
+        .post('/api/tickets')
+        .set('Cookie', creatorCookie)
+        .send({
+            title: 'Concert',
+            price: 20
+        })
+        .expect(201);
+
+    const ticket = await Ticket.findById(response.body.id);
+    const orderId = new mongoose.Types.ObjectId().toHexString();
+    ticket!.set({orderId: orderId});
+    await ticket!.save();
+
+    await supertest(app)
+        .put(`/api/tickets/${ticket!.id}`)
+        .set('Cookie', creatorCookie)
+        .send({
+            title: 'Concert',
+            price: 20
+        })
+        .expect(400);
 });
 
 it('return a 401 if the user does not own the ticket', async () => {

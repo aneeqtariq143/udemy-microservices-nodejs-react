@@ -82,6 +82,7 @@ it('fetch order which does not belong to the requested user', async () => {
     }
 
     const ticket = Ticket.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
         title: 'concert',
         price: 20
     });
@@ -109,6 +110,7 @@ it('fetch order which belong to the requested user', async () => {
     }
 
     const ticket = Ticket.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
         title: 'concert',
         price: 20
     });

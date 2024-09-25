@@ -20,7 +20,7 @@ export abstract class BaseListener<t extends Event> {
     /**
      * Pre-initialized NATS client
      */
-    private client: Stan;
+    protected client: Stan;
 
     /**
      * Number of seconds the listener has to ack a message

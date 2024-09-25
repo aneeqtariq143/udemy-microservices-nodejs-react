@@ -1,6 +1,8 @@
 import * as mongoose from "mongoose";
 import { app } from "./app";
 import {natsWrapper} from "./nats-wrapper";
+import {OrderCreatedListener} from "./events/listeners/order-created-listener";
+import {OrderCancelledListener} from "./events/listeners/order-cancelled-listener";
 
 const start = async () => {
     // Check if the JWT_KEY environment variable is defined
@@ -32,6 +34,12 @@ const start = async () => {
         });
         process.on('SIGINT', () => natsWrapper.client.close());
         process.on('SIGTERM', () => natsWrapper.client.close());
+
+        /**
+         * Start Listeners
+         */
+        new OrderCreatedListener(natsWrapper.client).listen();
+        new OrderCancelledListener(natsWrapper.client).listen();
 
         await mongoose.connect(process.env.MONGO_URI);
         console.log("Connected to MongoDB");

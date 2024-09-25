@@ -1,6 +1,11 @@
 import * as mongoose from "mongoose";
 import {OrderStatus} from "@atgitix/common";
 import {TicketDoc} from "./ticket";
+/**
+ * mongoose-update-if-current is a plugin for Mongoose that increments a version key on updates.
+ * This plugin is useful for implementing optimistic concurrency control.
+ */
+import {updateIfCurrentPlugin} from "mongoose-update-if-current";
 
 export {OrderStatus};
 
@@ -22,6 +27,7 @@ interface OrderDoc extends mongoose.Document {
     ticket: TicketDoc;
     createdAt: Date;
     updatedAt: Date;
+    version: number;
 }
 
 /**
@@ -71,6 +77,12 @@ const OrderSchema = new mongoose.Schema({
         }
     }
 });
+/**
+ * Below two is a configuration to increment the version key on updates.
+ * Configure to track `version` key instead of `__v`.
+ */
+OrderSchema.set('versionKey', 'version');
+OrderSchema.plugin(updateIfCurrentPlugin);
 
 /**
  * Solution to Issue#1: Solve the issue of TypeScript not being able to infer the type of the properties of the Order model

@@ -49,7 +49,7 @@ router.post("/api/orders",
         // Publish an event saying that an order was created
         new OrderCreatedPublisher(natsWrapper.client).publish({
             id: order.id,
-            version: order.__v!,
+            version: order.version!,
             status: order.status,
             userId: order.userId,
             expiresAt: order.expiresAt.toISOString(),
@@ -58,8 +58,6 @@ router.post("/api/orders",
                 price: ticket.price
             }
         });
-
-
 
         res.status(201).send(order);
     });

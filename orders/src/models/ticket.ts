@@ -1,9 +1,15 @@
 import * as mongoose from "mongoose";
 import {Order, OrderStatus} from "./order";
+/**
+ * mongoose-update-if-current is a plugin for Mongoose that increments a version key on updates.
+ * This plugin is useful for implementing optimistic concurrency control.
+ */
+import {updateIfCurrentPlugin} from "mongoose-update-if-current";
 
 // An interface that describes the properties
 // that are required to create a new Ticket
 interface TicketAttrs {
+    id: string;
     title: string;
     price: number;
 }
@@ -13,6 +19,7 @@ interface TicketAttrs {
 interface TicketDoc extends mongoose.Document {
     title: string;
     price: number;
+    version: number;
     isReserved(): Promise<boolean>;
 }
 
@@ -31,6 +38,7 @@ interface TicketDoc extends mongoose.Document {
  */
 interface TicketModel extends mongoose.Model<TicketDoc> {
     build(attrs: TicketAttrs): TicketDoc;
+    findByEvent(event: {id: string, version: number}): Promise<TicketDoc | null>;
 }
 
 const TicketSchema = new mongoose.Schema({
@@ -52,6 +60,12 @@ const TicketSchema = new mongoose.Schema({
         }
     }
 });
+/**
+ * Below two is a configuration to increment the version key on updates.
+ * Configure to track `version` key instead of `__v`.
+ */
+TicketSchema.set('versionKey', 'version');
+TicketSchema.plugin(updateIfCurrentPlugin);
 
 /**
  * Solution to Issue#1: Solve the issue of TypeScript not being able to infer the type of the properties of the Ticket model
@@ -66,8 +80,18 @@ const TicketSchema = new mongoose.Schema({
  * @returns {Ticket} A new instance of the Ticket model with the specified attributes.
  */
 TicketSchema.statics.build = (attrs: TicketAttrs) => {
-    return new Ticket(attrs);
+    return new Ticket({
+        _id: attrs.id,
+        title: attrs.title,
+        price: attrs.price
+    });
 };
+TicketSchema.statics.findByEvent = (event: {id: string, version: number}) => {
+    return Ticket.findOne({
+        _id: event.id,
+        version: event.version - 1
+    });
+}
 
 TicketSchema.methods.isReserved = async function() {
     // this === the ticket document that we just called 'isReserved' on

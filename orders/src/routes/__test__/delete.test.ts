@@ -84,6 +84,7 @@ it('delete order which does not belong to the requested user', async () => {
     }
 
     const ticket = Ticket.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
         title: 'concert',
         price: 20
     });
@@ -111,6 +112,7 @@ it('Delete order which belong to the requested user', async () => {
     }
 
     const ticket = Ticket.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
         title: 'concert',
         price: 20
     });
@@ -148,6 +150,7 @@ it('emits a order cancelled event', async () => {
     }
 
     const ticket = Ticket.build({
+        id: new mongoose.Types.ObjectId().toHexString(),
         title: 'concert',
         price: 20
     });

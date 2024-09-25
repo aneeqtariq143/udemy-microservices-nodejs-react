@@ -607,6 +607,9 @@ export * from './middlewares/validate-request';
 - **Solution**: Use the `version` field to handle the concurrency issues.
   - **Version Field**: We can use the `version` field to handle the concurrency issues. When we publish an event, we can increment the `version` field. When we process the event, we can check the `version` field. If the `version` field is not equal to the `version` field in the database, then we can ignore the event.
   - **Example**: when we add a new record to the database, we can increment the `version` field. When we update the record, we can increment the `version` field. When we delete the record, we can increment the `version` field. Then we pass the `version` field to the event. When we process the event, we can check the `version` field. If the `version` field is not equal to the `version` field in the database, then we can ignore the event.
+  - **Primary Service is responsible for recording, incrementing, and passing the version field to the event**.
+  ![img_55.png](img_55.png)
+  - 
 
 ### 15. Connecting to NATS in a Node JS World
 we will create a `nats-wrapper` library in common (shared code) that will help to connect to the NATS server and handle the NATS client connection. We will use the `nats-wrapper` library in the other services like `auth` service to connect to the NATS server.
@@ -796,6 +799,8 @@ There are two options to fix them:
                properties available on the User model" or we can say "Issue number two was related to the fact that
                these set of properties that we pass in to create a new user document are different than the properties
                that actually exist on that document".
+    2. **mongoose-update-if-current**: A plugin for Mongoose that implements optimistic concurrency control. [Documentation](https://www.npmjs.com/package/mongoose-update-if-current)
+        1. Install `mongoose-update-if-current` library `npm install mongoose-update-if-current --save`
 4. `cookie-session` library is used to manage cookies in the Node.js application. `cookie-session` is a middleware that
    stores the session data on the client within a cookie. It is signed with a secret to prevent
    tampering. [Documentation](https://www.npmjs.com/package/cookie-session)

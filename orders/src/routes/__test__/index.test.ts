@@ -3,7 +3,8 @@ import {app} from "../../app";
 import {signin} from "../../test/auth-signup-cookie";
 import {OrderDoc} from "../../models/order";
 import {Ticket} from "../../models/ticket";
-import {v4 as uuidv4} from "uuid"; // to generate unique titles
+import {v4 as uuidv4} from "uuid";
+import mongoose from "mongoose"; // to generate unique titles
 
 interface SeedDatabaseOptions {
     cookie: string;
@@ -20,6 +21,7 @@ const seedDatabase = async (user1: SeedDatabaseOptions, user2: SeedDatabaseOptio
         for (let i = 0; i < totalOrders; i++) {
             // Generate a unique ticket title and price
             const ticket = Ticket.build({
+                id: new mongoose.Types.ObjectId().toHexString(),
                 title: `Ticket-${uuidv4()}-${i}`, // unique title
                 price: Math.floor(Math.random() * 100) + 20 // random price between 20 and 120
             });

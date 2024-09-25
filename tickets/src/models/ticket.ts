@@ -1,4 +1,9 @@
 import * as mongoose from "mongoose";
+/**
+ * mongoose-update-if-current is a plugin for Mongoose that increments a version key on updates.
+ * This plugin is useful for implementing optimistic concurrency control.
+ */
+import {updateIfCurrentPlugin} from "mongoose-update-if-current";
 
 // An interface that describes the properties
 // that are required to create a new Ticket
@@ -14,6 +19,8 @@ interface TicketDoc extends mongoose.Document {
     title: string;
     price: number;
     userId: string;
+    version: number;
+    orderId?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -47,8 +54,13 @@ const ticketSchema = new mongoose.Schema({
     userId: {
         type: String,
         required: true
+    },
+    orderId: {
+        type: String,
+        required: false
     }
 }, {
+    timestamps: true,
     // Transform the JSON representation of the Ticket document
     toJSON: {
         transform(doc, ret) {
@@ -58,6 +70,13 @@ const ticketSchema = new mongoose.Schema({
         }
     }
 });
+
+/**
+ * Below two is a configuration to increment the version key on updates.
+ * Configure to track `version` key instead of `__v`.
+ */
+ticketSchema.set('versionKey', 'version');
+ticketSchema.plugin(updateIfCurrentPlugin);
 
 // ticketSchema.pre('save', async function (done) {
 //     if (this.isModified('password')) {
