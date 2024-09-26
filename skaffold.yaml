@@ -39,6 +39,16 @@ build:
         manual:
           - src: 'src/**/*.ts'
             dest: .
+    - image: aneeqtariq143/udemy-microservices-nodejs-react-expiration-service
+      context: expiration
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: 'src/**/*.ts'
+            dest: .
+          - src: 'package*.json'
+            dest: .
 manifests:
   rawYaml:
     - infra/k8s/*

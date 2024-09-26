@@ -1,0 +1,57 @@
+# This file is used to create a deployment for the expiration service
+apiVersion: apps/v1
+# Kind is the type of resource we are creating
+kind: Deployment
+# Metadata is data about the resource
+metadata:
+  # Name is the name of the resource
+  name: expiration-depl
+# Spec is the configuration of the resource
+spec:
+  # Replicas is the number of pods we want to run
+  replicas: 1
+  # Selector is used to select which pods this deployment is going to manage
+  selector:
+    matchLabels:
+      # app: expiration is the label of the pods
+      app: expiration
+  # Template is the configuration of the pods
+  template:
+    metadata:
+      # Labels is the labels of the pods
+      labels:
+        # app: expiration is the label of the pods
+        app: expiration
+      # Spec is the configuration of the containers
+    spec:
+      # Init containers run before the main application containers
+      initContainers:
+        # Init container to wait for NATS Streaming server to be ready
+        - name: expiration-wait-for-nats
+          image: appropriate/curl  # Lightweight image with networking tools
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for NATS Streaming server..."
+              until nc -z nats-srv 4222; do
+                echo "NATS is unavailable - sleeping"
+                sleep 5
+              done
+              echo "NATS is up - proceeding"
+      containers:
+        # - name is the name of the container
+        - name: expiration
+          # Image is the image of the container
+          image: aneeqtariq143/udemy-microservices-nodejs-react-expiration-service
+          env:
+            - name: NATS_CLIENT_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NATS_URL
+              value: 'http://nats-srv:4222'
+            - name: NATS_CLUSTER_ID
+              value: ticketing
+            - name: REDIS_HOST
+              value: expiration-redis-srv

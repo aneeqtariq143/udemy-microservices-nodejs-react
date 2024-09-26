@@ -685,6 +685,28 @@ There are two options to fix them:
 #### Orders Microservice Endpoints
 ![img_54.png](img_54.png)
 
+
+### Expiration Microservice (20. Worker Services)
+- **Create a `expiration` folder in a project root directory for `Expiration Service`**
+- **Copy files from `tickets` service to `expiration` service**: `.dockerignore`, `.gitignore`,  `jest.config.ts`, `tsconfig.json`, `package.json`, `src/index.ts`, `src/nats-wrapper.ts`
+- **Remove unwanted Dependencies/code**: Remove all the `express` related the dependencies and code from the `expiration` service
+- **Install Dependencies**: Install Dependencies for the `expiration` service
+  - `npm install @atgitix/common ts-node-dev typescript jest @types/jest bull nats-streaming-server @types/bull @types/node`
+    - **bull**: Premium Queue package for handling distributed jobs and messages in NodeJS.
+    - **nats-streaming-server**: NATS Streaming Server is a high-performance server that stores and retrieves messages for clients.
+    - **ts-node-dev**: Compiles your TypeScript code and restarts when files are modified.
+    - **typescript**: A superset of JavaScript that adds static types, which can help catch errors early and improve code quality.
+    - **jest**: Delightful JavaScript Testing.
+    - **@types/jest**: TypeScript definitions for Jest.
+    - **@types/bull**: TypeScript definitions for Bull.
+    - **@types/node**: TypeScript definitions for Node.js.
+    - **@atgitix/common**: Common libraries shared between all the resources.
+- **Build Docker Image**: Build the Docker image for the `orders` service. `docker build -t aneeqtariq143/udemy-microservices-nodejs-react-expiration-service .`
+- **Create kubernetes `Deployment` file**: Create a `infra/k8s/expiration-depl.yaml` file.
+    - **Note**: In our case it is almost identical to the `tickets` service `Deployment` file. Copy and paste the content of the `tickets` service `Deployment` file to the `expiration` service `Deployment` file. Then search and replace the `tickets` with `expiration` in the `expiration` service `Deployment` file.
+    - - **Redis**: Expiration microservice require `Redis`. So we need to create a `Redis` deployment and service in the `infra/k8s` folder.
+- **Create/Update `skaffold.yaml` config file**: To sync the application files and kubernetes deployment with the local machine
+
 #### Folder & Files Organizational Structure
 
 1. Each service has its own folder
@@ -814,5 +836,7 @@ There are two options to fix them:
    testing. [Documentation](https://www.npmjs.com/package/mongodb-memory-server)
     1. Install `jest` library
        `npm install jest @types/jest ts-jest supertest @types/supertest mongodb-memory-server --save-dev`
+7. `bull` library is used to create a queue. The fastest, most reliable, Redis-based queue for Node. [Documentation](https://www.npmjs.com/package/bull)
+    1. Install `bull` library `npm install bull @types/bull --save`
 
 #### Trouble Shooting
