@@ -1,0 +1,11 @@
+export const stripe = {
+    charges: {
+        /**
+         * his configures the mock function to return a resolved promise with an empty object when called.
+         */
+        create: jest.fn().mockResolvedValue({}),
+    },
+    paymentIntents: {
+        create: jest.fn().mockResolvedValue({}),
+    }
+}

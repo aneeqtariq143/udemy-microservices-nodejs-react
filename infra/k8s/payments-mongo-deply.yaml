@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments-mongo-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payments-mongo
+  template:
+    metadata:
+      labels:
+        app: payments-mongo
+    spec:
+      containers:
+        - name: payments-mongo
+          image: mongo
+          ports:
+            - containerPort: 27017
+          readinessProbe:
+            # Using TCP socket to check if MongoDB is accepting connections on port 27017
+            # Ensures that the service only starts routing traffic once the database is ready
+            tcpSocket:
+              port: 27017
+            # Waits 15 seconds before starting the readiness probe checks,
+            # allowing MongoDB to finish its initialization process
+            initialDelaySeconds: 15
+            # Runs the probe every 10 seconds to continually check if the database is ready
+            periodSeconds: 10
+            # If the probe doesn't receive a response within 5 seconds, it will consider the check failed
+            timeoutSeconds: 5
+            # If 3 consecutive failures occur, Kubernetes will consider the Pod as not ready
+            failureThreshold: 3
+
+          livenessProbe:
+            # Using TCP socket to check if MongoDB is still accepting connections on port 27017
+            # If the probe fails, Kubernetes will restart the container to recover from failure
+            tcpSocket:
+              port: 27017
+            # Waits 60 seconds after the container starts before beginning the liveness probe checks
+            # Ensures MongoDB has enough time to fully start before being monitored for health
+            initialDelaySeconds: 60
+            # The probe will run every 30 seconds to check if the MongoDB process is still alive
+            periodSeconds: 30
+            # If the probe doesn't receive a response within 5 seconds, it will consider the check failed
+            timeoutSeconds: 5
+            # If 3 consecutive failures occur, Kubernetes will restart the container
+            # This helps in recovering from issues where MongoDB becomes unresponsive
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payments-mongo-srv
+spec:
+  selector:
+    app: payments-mongo
+  ports:
+    - name: db
+      protocol: TCP
+      port: 27017
+      targetPort: 27017

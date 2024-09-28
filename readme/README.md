@@ -289,6 +289,7 @@ Each service has its own folder, common libraries shared between all the resourc
     - **Important Note**: The one downside to it is that anytime you start to create or spin up a new cluster you are
       going to have to remember all the different secrets that you had created over time.
 - **Creating Secrets in Production Environments (declarative approach)**: We will write config file approach
+  - - **Delete Secret*: `kubectl delete secret stripe-secret`
 - Example of creating a secret in Kubernetes
   ```bash
   # Create a secret
@@ -674,7 +675,7 @@ There are two options to fix them:
 #### Scaffolding the Order Service
 ![img_53.png](img_53.png)
 - **Create a `orders` folder in a project root directory for `Orders Service`**
-- **Copy files from `tickets` service to `orders` service**: `.dockerignore`, `.gitignore`, `Dockerfile`, `jest.config.ts`, `tsconfig.json`, `package.json`, `src/index.ts`, `src/app.ts`, `src/nats-wrapper.ts`
+- **Copy files from `tickets` service to `orders` service**: `.dockerignore`, `.gitignore`, `Dockerfile`, `jest.config.ts`, `tsconfig.json`, `package.json`, `src/index.ts`, `src/app.ts`, `src/nats-wrapper.ts`, `src/__mock__`, `src/test`
 - **Install Dependencies**: Copy the dependencies from the `tickets` service to the `orders` service
 - **Search and replace the `tickets` with `orders`**: Search and replace the `tickets` with `orders` in the `orders` service
 - **Build Docker Image**: Build the Docker image for the `orders` service. `docker build -t aneeqtariq143/udemy-microservices-nodejs-react-orders-service .`
@@ -688,7 +689,7 @@ There are two options to fix them:
 
 ### Expiration Microservice (20. Worker Services)
 - **Create a `expiration` folder in a project root directory for `Expiration Service`**
-- **Copy files from `tickets` service to `expiration` service**: `.dockerignore`, `.gitignore`,  `jest.config.ts`, `tsconfig.json`, `package.json`, `src/index.ts`, `src/nats-wrapper.ts`
+- **Copy files from `tickets` service to `expiration` service**: `.dockerignore`, `.gitignore`,  `jest.config.ts`, `tsconfig.json`, `package.json`, `src/index.ts`, `src/nats-wrapper.ts`, , `src/__mock__`
 - **Remove unwanted Dependencies/code**: Remove all the `express` related the dependencies and code from the `expiration` service
 - **Install Dependencies**: Install Dependencies for the `expiration` service
   - `npm install @atgitix/common ts-node-dev typescript jest @types/jest bull nats-streaming-server @types/bull @types/node`
@@ -706,6 +707,39 @@ There are two options to fix them:
     - **Note**: In our case it is almost identical to the `tickets` service `Deployment` file. Copy and paste the content of the `tickets` service `Deployment` file to the `expiration` service `Deployment` file. Then search and replace the `tickets` with `expiration` in the `expiration` service `Deployment` file.
     - - **Redis**: Expiration microservice require `Redis`. So we need to create a `Redis` deployment and service in the `infra/k8s` folder.
 - **Create/Update `skaffold.yaml` config file**: To sync the application files and kubernetes deployment with the local machine
+
+
+### Payment Microservice (21. Handling Payments)
+- **Create a `payments` folder in a project root directory for `Payments Service`**
+- **Copy files from `tickets` service to `payments` service**: `.dockerignore`, `.gitignore`, `Dockerfile`, `jest.config.ts`, `tsconfig.json`, `package.json`, `src/index.ts`, `src/app.ts`, `src/nats-wrapper.ts`, `src/__mock__`, `src/test`
+- **Install Dependencies**: Copy the dependencies from the `tickets` service to the `orders` service
+- **Search and replace the `tickets` with `orders`**: Search and replace the `tickets` with `orders` in the `orders` service
+- **Build Docker Image**: Build the Docker image for the `orders` service. `docker build -t aneeqtariq143/udemy-microservices-nodejs-react-payments-service .`
+- **Create kubernetes `Deployment` file**: Create a `infra/k8s/expiration-depl.yaml` file.
+    - **Note**: In our case it is almost identical to the `tickets` service `Deployment` file. Copy and paste the content of the `tickets` service `Deployment` file to the `expiration` service `Deployment` file. Then search and replace the `tickets` with `expiration` in the `expiration` service `Deployment` file.
+    - - **Redis**: Expiration microservice require `Redis`. So we need to create a `Redis` deployment and service in the `infra/k8s` folder.
+- **Create/Update `skaffold.yaml` config file**: To sync the application files and kubernetes deployment with the local machine
+
+#### Payments Microservice Event Flow
+![img_56.png](img_56.png)
+
+#### Stripe Payment Flow (deprecated)
+![img_57.png](img_57.png)
+
+#### Stripe PaymentIntent Flow
+- **PaymentIntent**: A PaymentIntent is an object that represents your intent to collect payment from a customer, tracking the lifecycle of the payment process through the following statuses: `requires_payment_method`, `requires_confirmation`, `requires_action`, `processing`, `requires_capture`, `succeeded`, `canceled`, or `failed`.
+
+####  Strip functionality Workflow
+![img_58.png](img_58.png)
+
+#### Initial Strip Setup
+1. **Create a Stripe Account**: Create a Stripe account on the Stripe website.
+2. **Get the Stripe API Key**: Get the Stripe API key from the Stripe website / Developer.
+3. **Create Kubectl secret**: Create a kubectl secret for the Stripe API key using the `kubectl create secret generic stripe-secret --from-literal STRIPE_KEY=[STRIP-KEY]`
+   - **Delete Secret*: `kubectl delete secret stripe-secret`
+4. **Install Stripe Library**: Install the Stripe library using the `npm install stripe @types/stripe --save` command.
+    - **stripe**: Official Stripe API library.
+    - **@types/stripe**: TypeScript definitions for Stripe.
 
 #### Folder & Files Organizational Structure
 
@@ -838,5 +872,7 @@ There are two options to fix them:
        `npm install jest @types/jest ts-jest supertest @types/supertest mongodb-memory-server --save-dev`
 7. `bull` library is used to create a queue. The fastest, most reliable, Redis-based queue for Node. [Documentation](https://www.npmjs.com/package/bull)
     1. Install `bull` library `npm install bull @types/bull --save`
+8. `stripe` library is used to handle payments. [Documentation](https://www.npmjs.com/package/stripe)
+    1. Install `stripe` library `npm install stripe @types/stripe --save` 
 
 #### Trouble Shooting

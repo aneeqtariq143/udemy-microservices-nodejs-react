@@ -49,6 +49,16 @@ build:
             dest: .
           - src: 'package*.json'
             dest: .
+    - image: aneeqtariq143/udemy-microservices-nodejs-react-payments-service
+      context: payments
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: 'src/**/*.ts'
+            dest: .
+          - src: 'package*.json'
+            dest: .
 manifests:
   rawYaml:
     - infra/k8s/*
