@@ -873,6 +873,8 @@ There are two options to fix them:
 7. `bull` library is used to create a queue. The fastest, most reliable, Redis-based queue for Node. [Documentation](https://www.npmjs.com/package/bull)
     1. Install `bull` library `npm install bull @types/bull --save`
 8. `stripe` library is used to handle payments. [Documentation](https://www.npmjs.com/package/stripe)
-    1. Install `stripe` library `npm install stripe @types/stripe --save` 
+    1. (Backend) Install `stripe` library `npm install stripe @types/stripe --save`
+    2. (Frontend) Install `react-stripe-checkout` library `npm install react-stripe-checkout --save`
+    3. **Testing* Strip provide Fake Credit cards and tokens for testing. [Documentation](https://stripe.com/docs/testing)
 
 #### Trouble Shooting

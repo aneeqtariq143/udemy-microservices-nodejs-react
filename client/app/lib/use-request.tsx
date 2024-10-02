@@ -14,7 +14,7 @@ interface UseRequestProps<T> {
 
 // Define the types for the hook's return value
 interface UseRequestReturn<T> {
-    doRequest: () => Promise<T | undefined>; // Function to make the request, returns data or undefined
+    doRequest: (props: {}) => Promise<T | undefined>; // Function to make the request, returns data or undefined
     errors: JSX.Element | null; // Error messages, can be JSX or null
 }
 
@@ -27,10 +27,10 @@ const useRequest = <T, >({
                          }: UseRequestProps<T>): UseRequestReturn<T> => {
     const [errors, setErrors] = useState<JSX.Element | null>(null);
 
-    const doRequest = async (): Promise<T | undefined> => {
+    const doRequest = async (props = {}): Promise<T | undefined> => {
         try {
             setErrors(null);
-            const response: AxiosResponse<T> = await axios[method](url, body);
+            const response: AxiosResponse<T> = await axios[method](url, {...body, ...props});
 
             if (onSuccess) {
                 onSuccess(response.data);

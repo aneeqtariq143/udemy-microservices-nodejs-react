@@ -14,13 +14,13 @@ export default () => {
     });
 
     if(typeof window === 'undefined'){
-        console.log('Server Side Check Current User');
+        console.log('API hit at Server Side');
         return axios.create({
             baseURL: 'http://ingress-nginx-controller.ingress-nginx.svc.cluster.local',
             headers: headersObject
         });
     }else{
-        console.log('Client Side Check Current User');
+        console.log('API hit at Client Side');
         return axios.create({
             baseURL: '/'
         });

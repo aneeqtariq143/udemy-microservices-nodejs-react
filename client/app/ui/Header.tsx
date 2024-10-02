@@ -39,6 +39,22 @@ const Header: React.FC<HeaderProps> = ({currentUser}) => {
                     {currentUser && (
                         <button
                             className="bg-transparent hover:bg-gray-700 text-white font-semibold py-2 px-4 border border-gray-600 rounded">
+                            <Link href={'/orders'}>
+                                My Orders
+                            </Link>
+                        </button>
+                    )}
+                    {currentUser && (
+                        <button
+                            className="bg-transparent hover:bg-gray-700 text-white font-semibold py-2 px-4 border border-gray-600 rounded">
+                            <Link href={'/tickets/create'}>
+                                Sell Tickets
+                            </Link>
+                        </button>
+                    )}
+                    {currentUser && (
+                        <button
+                            className="bg-transparent hover:bg-gray-700 text-white font-semibold py-2 px-4 border border-gray-600 rounded">
                             <Link href={'/auth/signout'}>
                                 Sign Out
                             </Link>

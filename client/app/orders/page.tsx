@@ -1,12 +1,12 @@
 import buildAxiosClient from "@/app/helpers/build-axios-client";
-import TicketList from "@/app/ui/TicketList";
-import {TicketsResponseInterface} from "@/app/types/tickets";
+import OrderList from "@/app/orders/ui/OrderList";
+import {OrdersResponseInterface} from "@/app/types/orders";
 
 
-async function getTickets(): Promise<TicketsResponseInterface | undefined> {
+async function getOrders(): Promise<OrdersResponseInterface | undefined> {
     const axiosClient = buildAxiosClient();
     try {
-        const response = await axiosClient.get("/api/tickets");
+        const response = await axiosClient.get("/api/orders");
         return response.data;
     } catch (error) {
         console.error(error);
@@ -14,8 +14,8 @@ async function getTickets(): Promise<TicketsResponseInterface | undefined> {
     }
 }
 
-export default async function Home() {
-    const tickets = await getTickets();
+export default async function Page() {
+    const orders = await getOrders();
 
     return (
         <main className="container mx-auto py-5">
@@ -29,7 +29,7 @@ export default async function Home() {
                 {/*    </button>*/}
                 {/*</Link>*/}
             </div>
-            <TicketList tickets={tickets?.tickets || []}/>
+            <OrderList orders={orders?.orders || []}/>
         </main>
     );
 }
