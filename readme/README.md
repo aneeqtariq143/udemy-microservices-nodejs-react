@@ -781,7 +781,8 @@ There are two options to fix them:
         - uses: actions/checkout@v2
         - run: cd auth && npm install && npm run test:ci
    ```   
-    - **Note**: We have to create a separate workflow for each service. We have to create a separate workflow for the `auth`, `tickets`, `orders`, `expiration`, and `payments` services.
+    - **Parallel Workflows**: we can run the tests in parallel by adding separate workflow for each for the `tests-auth`, `tests-ticket`, `tests-order`,  and `tests-payment` services.
+    - **Selective Test Execution**: We can run the tests selectively by adding the `if` condition in the workflow. For example, we can run the tests only for the `auth` service by adding the `if: github.event.repository.name == 'auth'` condition in the workflow.
 9. **Add new script in `auth` microservice `package.json` file**: Add the following script in the `auth` microservice `package.json` file.
     ```json
     "scripts": {
