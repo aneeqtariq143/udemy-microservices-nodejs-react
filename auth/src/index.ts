@@ -3,7 +3,7 @@ import { app } from "./app";
 import process from "node:process";
 
 const start = async () => {
-    console.log("Starting up....");
+    console.log("Starting up...");
     // Check if the JWT_KEY environment variable is defined
     if(!process.env.JWT_KEY){
         throw new Error("JWT_KEY must be defined");
