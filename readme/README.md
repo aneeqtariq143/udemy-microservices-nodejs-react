@@ -741,6 +741,54 @@ There are two options to fix them:
     - **stripe**: Official Stripe API library.
     - **@types/stripe**: TypeScript definitions for Stripe.
 
+### CI/CD Workflow (22. CI/CD Workflow)
+- **CI/CD Workflow**: Continuous Integration (CI) and Continuous Deployment (CD) is a practice that allows developers to integrate code into a shared repository several times a day. Each check-in is then verified by an automated build, allowing teams to detect problems early.
+- **CI/CD Tools**: There are many CI/CD tools available in the market. Some of the popular CI/CD tools are Jenkins, CircleCI, Travis CI, GitLab CI/CD, GitHub Actions, and Bitbucket Pipelines.
+
+#### Scenarios in our Application
+![img_59.png](img_59.png)
+
+#### CI/CD Workflow
+![img_60.png](img_60.png)
+
+#### Steps
+1. **Create a GitHub Repository**: Create a GitHub repository for the project.
+2. **Initialize the Git Repository**: Initialize the git repository in the project root directory using the `git init` command.
+   - **Strategies for Initializing the Git Repository**:
+       1. **Option#1: Mono-Repo**: Mono-Repo is a single repository that contains all the services. This is a good option because it leads to less complexity. We will use the Mono-Repo strategy in our project.
+       2. **Option#2: Multi-Repo**: Multi-Repo is multiple repositories that contain all the services. This is not a good option because it leads to a lot of complexity.
+3. **Create a `.gitignore` file**: Create a `.gitignore` file in the project root directory to ignore the unnecessary files and folders.
+4. **Add the Files to the Git Repository**: Add all the files to the git repository using the `git add .` command.
+5. **Commit the Files**: Commit the files to the git repository using the `git commit -m "Initial Commit"` command.
+6. **Add the Remote Repository**: Add the remote repository to the git repository using the `git remote add origin [URL]` command.
+7. **Push the Files to the Remote Repository**: Push the files to the remote repository using the `git push -u origin master` command.
+8. **Create a GitHub Action**: 
+   - **GitHub Actions**: GitHub Actions is a CI/CD tool that allows you to automate your workflow. You can build, test, and deploy your code right from GitHub.
+   - **Types of events**: There are many types of events available in GitHub Actions. Some of the popular events are `push`, `pull_request`, `release`, `workflow_dispatch`, and `schedule`.
+   Example:
+   ![img_61.png](img_61.png)
+   - **Create a GitHub workflow**: Goto GitHub repository -> Actions -> Click `set up a workflow yourself` -> rename the file to `tests.yml` because we're going to run test -> Add the following code to the `tests.yml` file.
+   ```yml
+    name: tests
+   
+    on:
+      pull_request
+   
+    jobs:
+      build:
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/checkout@v2
+        - run: cd auth && npm install && npm run test:ci
+   ```   
+    - **Note**: We have to create a separate workflow for each service. We have to create a separate workflow for the `auth`, `tickets`, `orders`, `expiration`, and `payments` services.
+9. **Add new script in `auth` microservice `package.json` file**: Add the following script in the `auth` microservice `package.json` file.
+    ```json
+    "scripts": {
+      "test:ci": "jest --forceExit --detectOpenHandles --runInBand"
+    }
+    ```
+
 #### Folder & Files Organizational Structure
 
 1. Each service has its own folder
