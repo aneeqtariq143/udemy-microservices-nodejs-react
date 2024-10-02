@@ -772,7 +772,7 @@ There are two options to fix them:
     name: tests
    
     on:
-      pull_request
+      pull_request:
    
     jobs:
       build:
