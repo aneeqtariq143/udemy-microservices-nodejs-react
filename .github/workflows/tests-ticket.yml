@@ -2,6 +2,10 @@ name: tests-ticket
    
 on:
   pull_request:
+    # Run tests on pull requests
+    paths:
+      # Only run tests on changes to the tickets directory
+      - 'tickets/**'
    
 jobs:
   build:

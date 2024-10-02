@@ -2,6 +2,10 @@ name: tests-payment
    
 on:
   pull_request:
+    # Run tests on pull requests
+    paths:
+      # Only run tests on changes to the payments directory
+      - 'payments/**'
    
 jobs:
   build:

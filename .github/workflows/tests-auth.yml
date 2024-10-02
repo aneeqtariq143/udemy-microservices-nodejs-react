@@ -1,8 +1,12 @@
 name: tests-auth
-   
+
 on:
   pull_request:
-   
+    # Run tests on pull requests
+    paths:
+    # Only run tests on changes to the auth directory
+      - 'auth/**'
+
 jobs:
   build:
     runs-on: ubuntu-latest
